@@ -15,7 +15,7 @@ open = "5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1", features = ["process", "io-util", "sync", "rt"] }
-dotrino-theme = { path = "../../dotrino-theme/rust" }
+dotrino-theme = { git = "https://github.com/imdotrino/dotrino-theme", rev = "bb1e5de" }
 
 [profile.release]
 lto = "thin"

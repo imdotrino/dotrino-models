@@ -826,6 +826,7 @@ dependencies = [
 [[package]]
 name = "dotrino-theme"
 version = "0.1.0"
+source = "git+https://github.com/imdotrino/dotrino-theme?rev=bb1e5de#bb1e5de0d2fa1e660c38e82b0a7cdebb6cd9409a"
 dependencies = [
  "iced",
 ]

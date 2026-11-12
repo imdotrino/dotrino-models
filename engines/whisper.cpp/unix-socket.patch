@@ -1,0 +1,16 @@
+diff --git a/examples/server/server.cpp b/examples/server/server.cpp
+index b745f4d..9bd7e6c 100644
+--- a/examples/server/server.cpp
++++ b/examples/server/server.cpp
+@@ -1253,6 +1253,11 @@ int main(int argc, char ** argv) {
+     svr->set_read_timeout(sparams.read_timeout);
+     svr->set_write_timeout(sparams.write_timeout);
+ 
++    // Dotrino: a path ending in .sock listens on a UNIX socket (only this user can reach it).
++    if (sparams.hostname.size() > 5 && sparams.hostname.compare(sparams.hostname.size() - 5, 5, ".sock") == 0) {
++        svr->set_address_family(AF_UNIX);
++    }
++
+     if (!svr->bind_to_port(sparams.hostname, sparams.port))
+     {
+         fprintf(stderr, "\ncouldn't bind to server socket: hostname=%s port=%d\n\n",

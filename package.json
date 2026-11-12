@@ -1,0 +1,38 @@
+{
+  "name": "@dotrino/models",
+  "version": "0.1.0",
+  "description": "Los modelos de IA de Dotrino en tu computadora: un catálogo probado, que se baja, se enciende y se apaga solo.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imdotrino/dotrino-models.git"
+  },
+  "homepage": "https://wiki.dotrino.com/desarrollo/pilares/",
+  "bin": {
+    "dotrino-models": "bin/dotrino-models.js"
+  },
+  "exports": {
+    ".": "./src/client.js",
+    "./catalog": "./src/catalog.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "type-check": "tsc --noEmit -p jsconfig.json"
+  },
+  "dependencies": {
+    "@dotrino/compat": "0.5.1",
+    "@dotrino/update": "0.9.4"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3"
+  }
+}

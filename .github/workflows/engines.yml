@@ -1,0 +1,67 @@
+# Compila los motores que Dotrino no encuentra publicados como hace falta y los cuelga de una
+# release con su atestación. Hoy: whisper.cpp con Vulkan para Linux x64 (whisper.cpp solo
+# publica la versión de CPU para Linux) y con el parche que lo deja escuchar en un socket UNIX.
+#
+# El catálogo (src/catalog.json) fija el sha256 de lo que sale de aquí: se etiqueta, corre,
+# y el hash del artefacto se copia al catálogo en el mismo cambio que lo empieza a usar.
+name: engines
+
+on:
+  push:
+    tags: ['engine-whisper.cpp-*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  whisper-linux-x64-vulkan:
+    runs-on: ubuntu-24.04
+    env:
+      WHISPER_TAG: v1.9.5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version from the tag
+        id: v
+        run: |
+          # engine-whisper.cpp-1.9.5-d1 → 1.9.5-d1
+          V="${GITHUB_REF_NAME#engine-whisper.cpp-}"
+          [ "$V" = "$GITHUB_REF_NAME" ] && { echo "run this from an engine-whisper.cpp-* tag"; exit 1; }
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+      - name: Toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends glslc libvulkan-dev spirv-headers cmake
+      - name: Source + patch
+        run: |
+          git clone --depth 1 --branch "$WHISPER_TAG" https://github.com/ggml-org/whisper.cpp src
+          git -C src apply "$GITHUB_WORKSPACE/engines/whisper.cpp/unix-socket.patch"
+      - name: Build
+        run: |
+          # GGML_NATIVE=OFF: el binario corre en cualquier x86-64, no solo en la CPU del runner.
+          # RPATH $ORIGIN: las .so se buscan junto al binario.
+          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DGGML_NATIVE=OFF \
+            -DWHISPER_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_RPATH='$ORIGIN'
+          cmake --build build -j"$(nproc)" --target whisper-server
+      - name: Package
+        id: pkg
+        run: |
+          N="whisper.cpp-${{ steps.v.outputs.version }}-linux-x64-vulkan"
+          mkdir -p "$N"
+          cp build/bin/whisper-server "$N/"
+          find build -name '*.so*' -exec cp -P {} "$N/" \;
+          cp src/LICENSE "$N/LICENSE-whisper.cpp"
+          tar czf "$N.tar.gz" "$N"
+          sha256sum "$N.tar.gz" | tee "$N.tar.gz.sha256"
+          echo "name=$N" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: ${{ steps.pkg.outputs.name }}.tar.gz
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" \
+            --notes "whisper.cpp $WHISPER_TAG, Vulkan, Linux x64, con el parche de socket UNIX (engines/whisper.cpp/unix-socket.patch)." \
+            "${{ steps.pkg.outputs.name }}.tar.gz" "${{ steps.pkg.outputs.name }}.tar.gz.sha256"

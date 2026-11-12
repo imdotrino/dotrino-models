@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#00658c"/>
+  <!-- un chip: el modelo que corre en tu computadora -->
+  <g fill="none" stroke="#d4ecfa" stroke-width="22" stroke-linecap="round">
+    <rect x="146" y="146" width="220" height="220" rx="36"/>
+    <path d="M206 146v-46M256 146v-46M306 146v-46M206 412v-46M256 412v-46M306 412v-46M146 206h-46M146 256h-46M146 306h-46M412 206h-46M412 256h-46M412 306h-46"/>
+  </g>
+  <!-- tres nodos conectados dentro del chip -->
+  <g fill="#ffffff">
+    <circle cx="214" cy="222" r="22"/>
+    <circle cx="298" cy="222" r="22"/>
+    <circle cx="256" cy="298" r="22"/>
+  </g>
+  <path d="M214 222L298 222L256 298Z" fill="none" stroke="#ffffff" stroke-width="12" stroke-linejoin="round"/>
+</svg>

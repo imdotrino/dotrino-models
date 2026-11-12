@@ -11,6 +11,7 @@ const HELP = es
   ? `dotrino-models ${VERSION} — los modelos de IA de Dotrino en tu computadora
 
   serve                         corre el gestor (lo lanza el servicio)
+  up                            arranca el gestor en segundo plano
   service install|uninstall     arrancarlo al iniciar sesión (systemd de usuario)
   status                        el catálogo: qué está instalado y encendido
   install <modelo>              bajar un modelo (y su motor)
@@ -24,6 +25,7 @@ const HELP = es
   : `dotrino-models ${VERSION} — Dotrino's AI models on your computer
 
   serve                         run the manager (the service launches it)
+  up                            start the manager in the background
   service install|uninstall     start it at login (systemd user unit)
   status                        the catalog: what is installed and running
   install <model>               download a model (and its engine)
@@ -58,6 +60,11 @@ async function main () {
     case 'bridge': {
       const { runBridge } = await import('../src/bridge.js')
       return runBridge({ version: VERSION })
+    }
+    case 'up': {
+      const d = await import('../src/daemon.js')
+      await d.startDetached()
+      break
     }
     case 'service': {
       const d = await import('../src/daemon.js')

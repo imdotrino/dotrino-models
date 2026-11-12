@@ -110,6 +110,12 @@ test('install, ensure, run tasks through the socket, stop on idle', async () => 
 
     // Y se vuelve a encender al pedirlo.
     assert.equal((await c.chat({ messages: [{ role: 'user', content: 'otra' }] })).text, '[llm-model] otra')
+
+    // Modelos ya bajados y ajustes vacíos (otra app, o se borraron): ensure los elige sin bajar nada.
+    await writeFile(p.settings, JSON.stringify({ tasks: {} }))
+    assert.deepEqual((await c.ensure(['transcribe'])).tasks, { transcribe: 'asr' })
+    assert.equal(models.installs.size, 0)
+    assert.deepEqual((await c.status()).tasks, { transcribe: 'asr' })
   } finally {
     server.close()
     await models.close()

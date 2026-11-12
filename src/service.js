@@ -170,18 +170,29 @@ export class Models {
 
   /**
    * Lo que llama una app al instalarse: «necesito estas tareas». La tarea sin modelo elegido
-   * se queda con el modelo por defecto del catálogo y se baja. Vuelve enseguida.
+   * se queda con el modelo por defecto del catálogo, y se baja si falta. Vuelve enseguida.
    * @param {string[]} wanted
    */
   async ensure (wanted) {
-    const s = await readSettings(this.paths.settings)
+    for (const t of wanted) if (!TASKS.includes(t)) throw codeError('unknown-task', `unknown task ${t}`)
     /** @type {Record<string, string>} */
     const out = {}
-    for (const t of wanted) {
-      if (!TASKS.includes(t)) throw codeError('unknown-task', `unknown task ${t}`)
-      const id = s.tasks[t] || defaultFor(this.catalog, t)?.id
-      if (!id) throw codeError('no-model-for-task', `the catalog has no default model for ${t}`)
-      out[t] = id
+    // Elegir dentro de la cola de ajustes: el modelo puede estar ya bajado (otra app lo pidió,
+    // o los ajustes se borraron) y entonces no hay instalación que lo elija.
+    await this.updateSettings((s) => {
+      let changed = false
+      for (const t of wanted) {
+        if (!s.tasks[t]) {
+          const d = defaultFor(this.catalog, t)
+          if (!d) throw codeError('no-model-for-task', `the catalog has no default model for ${t}`)
+          s.tasks[t] = d.id
+          changed = true
+        }
+        out[t] = s.tasks[t]
+      }
+      return changed
+    })
+    for (const id of new Set(Object.values(out))) {
       if (!(await this.isInstalled(id))) this.install(id).catch(() => {})
     }
     return out

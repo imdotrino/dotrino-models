@@ -34,13 +34,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends glslc libvulkan-dev spirv-headers cmake
       - name: Source + patch
         run: |
-          git clone --depth 1 --branch "$WHISPER_TAG" https://github.com/ggml-org/whisper.cpp src
-          git -C src apply "$GITHUB_WORKSPACE/engines/whisper.cpp/unix-socket.patch"
+          git clone --depth 1 --branch "$WHISPER_TAG" https://github.com/ggml-org/whisper.cpp whisper-src
+          git -C whisper-src apply "$GITHUB_WORKSPACE/engines/whisper.cpp/unix-socket.patch"
       - name: Build
         run: |
           # GGML_NATIVE=OFF: el binario corre en cualquier x86-64, no solo en la CPU del runner.
           # RPATH $ORIGIN: las .so se buscan junto al binario.
-          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DGGML_NATIVE=OFF \
+          cmake -S whisper-src -B build -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DGGML_NATIVE=OFF \
             -DWHISPER_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_RPATH='$ORIGIN'
           cmake --build build -j"$(nproc)" --target whisper-server
@@ -51,7 +51,7 @@ jobs:
           mkdir -p "$N"
           cp build/bin/whisper-server "$N/"
           find build -name '*.so*' -exec cp -P {} "$N/" \;
-          cp src/LICENSE "$N/LICENSE-whisper.cpp"
+          cp whisper-src/LICENSE "$N/LICENSE-whisper.cpp"
           tar czf "$N.tar.gz" "$N"
           sha256sum "$N.tar.gz" | tee "$N.tar.gz.sha256"
           echo "name=$N" >> "$GITHUB_OUTPUT"

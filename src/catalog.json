@@ -17,7 +17,7 @@
       "builds": {
         "linux-x64": {
           "url": "https://github.com/imdotrino/dotrino-models/releases/download/engine-whisper.cpp-1.9.5-d1/whisper.cpp-1.9.5-d1-linux-x64-vulkan.tar.gz",
-          "sha256": "PENDING-CI",
+          "sha256": "dd02fa28a298e709bb7646d649a027d60083c953cec2e71ccd872dc1864f3fdb",
           "dir": "whisper.cpp-1.9.5-d1-linux-x64-vulkan"
         }
       }

@@ -1,6 +1,6 @@
 {
   "name": "@dotrino/models",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Los modelos de IA de Dotrino en tu computadora: un catálogo probado, que se baja, se enciende y se apaga solo.",
   "type": "module",
   "license": "MIT",
